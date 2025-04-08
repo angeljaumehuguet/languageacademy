@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Tema base para modo nocturno -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Colores primarios -->
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- Barra de estado -->
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        
+        <!-- Personalización del tema -->
+        <item name="android:windowBackground">@color/darkGray</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        
+        <!-- Estilos de botones -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+        
+        <!-- Apariencia de texto -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.App.Headline1.Night</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.App.Headline2.Night</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.App.Body1.Night</item>
+    </style>
+    
+    <!-- Estilos de texto para modo nocturno -->
+    <style name="TextAppearance.App.Headline1.Night" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    
+    <style name="TextAppearance.App.Headline2.Night" parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    
+    <style name="TextAppearance.App.Body1.Night" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">@color/lightGray</item>
+    </style>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App information -->
+    <string name="app_name">Language Academy</string>
+    <string name="app_title">Learn Languages with Us</string>
+    <string name="app_logo">Academy Logo</string>
+
+    <!-- Main Activity -->
+    <string name="our_locations">Our Locations</string>
+    <string name="vocabulary_practice">Practice Vocabulary</string>
+    <string name="visit_website">Visit Our Website</string>
+    <string name="gesture_hint">Draw a gesture to navigate</string>
+    <string name="back_to_main">Back to Main</string>
+
+    <!-- Words Activity -->
+    <string name="word_image">Word Image</string>
+    <string name="play_sound">Play Sound</string>
+    <string name="pause_sound">Pause Sound</string>
+
+    <!-- Words -->
+    <string name="word_hello">Hello</string>
+    <string name="phonetic_hello">/həˈləʊ/</string>
+
+    <string name="word_goodbye">Goodbye</string>
+    <string name="phonetic_goodbye">/ˌɡʊdˈbaɪ/</string>
+
+    <string name="word_thank_you">Thank You</string>
+    <string name="phonetic_thank_you">/ˈθæŋk juː/</string>
+
+    <string name="word_please">Please</string>
+    <string name="phonetic_please">/pliːz/</string>
+
+    <string name="word_welcome">Welcome</string>
+    <string name="phonetic_welcome">/ˈwelkəm/</string>
+</resources>
