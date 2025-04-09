@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
     }
 
     private void openWebsite() {
-        String url = "https://www.example.com";
+        String url = "https://towerenglish.net/";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         startActivity(intent);
