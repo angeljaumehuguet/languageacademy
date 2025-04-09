@@ -7,8 +7,10 @@ import android.gesture.GestureLibrary;
 import android.gesture.GestureOverlayView;
 import android.gesture.Prediction;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
     private GestureLibrary gestureLib;
     private SoundPool soundPool;
     private int soundButtonClick;
+    private boolean soundLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +39,11 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
         btnWebsite = findViewById(R.id.btnWebsite);
 
         // Setup gesture library
-        setupGestures();
+        try {
+            setupGestures();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error with gestures: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
 
         // Setup SoundPool for button click sounds
         setupSoundPool();
@@ -46,28 +53,60 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
     }
 
     private void setupGestures() {
-        gestureLib = GestureLibraries.fromRawResource(this, R.raw.gestures);
-        if (!gestureLib.load()) {
-            Toast.makeText(this, "Could not load gestures library", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        try {
+            gestureLib = GestureLibraries.fromRawResource(this, R.raw.gestures);
+            if (!gestureLib.load()) {
+                Toast.makeText(this, "Could not load gestures library", Toast.LENGTH_SHORT).show();
+            }
 
-        GestureOverlayView gestureOverlayView = findViewById(R.id.gestureOverlayView);
-        gestureOverlayView.addOnGesturePerformedListener(this);
+            GestureOverlayView gestureOverlayView = findViewById(R.id.gestureOverlayView);
+            if (gestureOverlayView != null) {
+                gestureOverlayView.addOnGesturePerformedListener(this);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error setting up gestures", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupSoundPool() {
-        AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build();
+        try {
+            // Para Android 5.0 (Lollipop) y versiones posteriores
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_GAME)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build();
 
-        soundPool = new SoundPool.Builder()
-                .setMaxStreams(5)
-                .setAudioAttributes(audioAttributes)
-                .build();
+                soundPool = new SoundPool.Builder()
+                        .setMaxStreams(10)
+                        .setAudioAttributes(audioAttributes)
+                        .build();
+            } else {
+                // Para versiones anteriores a Lollipop
+                soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+            }
 
-        soundButtonClick = soundPool.load(this, R.raw.button_click, 1);
+            // Configura un listener para saber cuando el sonido está cargado
+            soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
+                if (status == 0) {
+                    soundLoaded = true;
+                    Toast.makeText(MainActivity.this, "Sound loaded successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed to load sound", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            // Intenta cargar el sonido
+            try {
+                soundButtonClick = soundPool.load(this, R.raw.button_click, 1);
+            } catch (Exception e) {
+                // Si falla, intenta cargar un sonido del sistema
+                soundButtonClick = 1; // Un ID temporal
+                Toast.makeText(this, "Using system sound", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error setting up sound: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setButtonListeners() {
@@ -88,7 +127,32 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
     }
 
     private void playButtonSound() {
-        soundPool.play(soundButtonClick, 1.0f, 1.0f, 1, 0, 1.0f);
+        try {
+            // Asegúrate de que el volumen esté al máximo
+            float leftVolume = 1.0f;
+            float rightVolume = 1.0f;
+            int priority = 1;
+            int loop = 0;
+            float rate = 1.0f;
+
+            // Verifica que el AudioManager no esté en modo silencio
+            AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+            float currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            float volume = currentVolume / maxVolume;
+
+            // Si el volumen está muy bajo, usa un volumen mínimo
+            if (volume < 0.1f) {
+                volume = 0.3f;
+            }
+
+            // Reproduce el sonido
+            if (soundPool != null && soundButtonClick > 0) {
+                soundPool.play(soundButtonClick, volume, volume, priority, loop, rate);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error playing sound: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openMapActivity() {
@@ -102,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
     }
 
     private void openWebsite() {
-        String url = "https://towerenglish.net/";
+        String url = "https://www.example.com";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         startActivity(intent);
@@ -110,25 +174,29 @@ public class MainActivity extends AppCompatActivity implements GestureOverlayVie
 
     @Override
     public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture) {
-        ArrayList<Prediction> predictions = gestureLib.recognize(gesture);
-        if (predictions.size() > 0 && predictions.get(0).score > 1.0) {
-            String action = predictions.get(0).name;
-            
-            // Handle gesture actions
-            switch (action) {
-                case "map":
-                    openMapActivity();
-                    break;
-                case "vocabulary":
-                    openWordsActivity();
-                    break;
-                case "website":
-                    openWebsite();
-                    break;
-                case "exit":
-                    finish();
-                    break;
+        try {
+            ArrayList<Prediction> predictions = gestureLib.recognize(gesture);
+            if (predictions.size() > 0 && predictions.get(0).score > 1.0) {
+                String action = predictions.get(0).name;
+
+                // Handle gesture actions
+                switch (action) {
+                    case "map":
+                        openMapActivity();
+                        break;
+                    case "vocabulary":
+                        openWordsActivity();
+                        break;
+                    case "website":
+                        openWebsite();
+                        break;
+                    case "exit":
+                        finish();
+                        break;
+                }
             }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error with gesture: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

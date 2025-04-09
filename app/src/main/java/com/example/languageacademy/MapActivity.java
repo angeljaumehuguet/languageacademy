@@ -1,15 +1,28 @@
 package com.example.languageacademy;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-public class MapActivity extends AppCompatActivity {
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,32 +37,71 @@ public class MapActivity extends AppCompatActivity {
         Button btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(view -> finish());
 
+        // Obtiene el fragmento del mapa y solicita ser notificado cuando el mapa esté listo
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
+
         try {
-            // Configuración del WebView
-            WebView webView = findViewById(R.id.webView);
-            WebSettings webSettings = webView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
-            webSettings.setDomStorageEnabled(true);
-            webSettings.setLoadWithOverviewMode(true);
-            webSettings.setUseWideViewPort(true);
-            webSettings.setBuiltInZoomControls(true);
-            webSettings.setDisplayZoomControls(false);
-            webSettings.setSupportZoom(true);
-            webSettings.setDefaultTextEncodingName("utf-8");
+            // Redimensiona el icono personalizado
+            BitmapDescriptor smallMarkerIcon = createSmallMarkerIcon();
 
-            webView.setWebViewClient(new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    // El mapa se ha cargado completamente
-                    Toast.makeText(MapActivity.this, "Mapa cargado correctamente", Toast.LENGTH_SHORT).show();
-                }
-            });
+            // Coordenadas de las dos academias en Reus
+            // Nota: Estas son coordenadas aproximadas, puedes ajustarlas si tienes las coordenadas exactas
+            LatLng rieraLocation = new LatLng(41.1525, 1.1103); // Riera de Miró 76
+            LatLng ravalLocation = new LatLng(41.1505, 1.1050); // Raval de Jesús 42
 
-            // Cargar un mapa de Google Maps directamente
-            webView.loadUrl("https://www.google.com/maps/search/?api=1&query=Riera+de+Miró+76+43203+Reus+Tarragona");
+            // Añade los marcadores con tu icono personalizado redimensionado
+            mMap.addMarker(new MarkerOptions()
+                    .position(rieraLocation)
+                    .title("Academia de Inglés - Riera")
+                    .snippet("Riera de Miró 76-1º, 43203 Reus, (Tarragona)")
+                    .icon(smallMarkerIcon));
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(ravalLocation)
+                    .title("Academia de Inglés - Raval")
+                    .snippet("Raval de Jesús 42-1º, 43201 Reus, (Tarragona)")
+                    .icon(smallMarkerIcon));
+
+            // Crear límites que incluyan ambos marcadores
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(rieraLocation);
+            builder.include(ravalLocation);
+            LatLngBounds bounds = builder.build();
+
+            // Mueve la cámara para incluir ambos marcadores con un padding
+            int padding = 100; // en píxeles
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
+
+            // Habilita controles de zoom
+            mMap.getUiSettings().setZoomControlsEnabled(true);
+            mMap.getUiSettings().setCompassEnabled(true);
+
+            Toast.makeText(this, "Mapa cargado correctamente", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(this, "Error al cargar el mapa: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
+    }
+
+    private BitmapDescriptor createSmallMarkerIcon() {
+        Bitmap originalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.marker_academy);
+        int width = originalBitmap.getWidth();
+        int height = originalBitmap.getHeight();
+
+        // Redimensiona a aproximadamente 1/6 del tamaño original para hacerlo mucho más pequeño
+        int newWidth = width / 6;
+        int newHeight = height / 6;
+
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, false);
+        return BitmapDescriptorFactory.fromBitmap(resizedBitmap);
     }
 }
