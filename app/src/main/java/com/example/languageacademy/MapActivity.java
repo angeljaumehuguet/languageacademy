@@ -53,10 +53,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             // Redimensiona el icono personalizado
             BitmapDescriptor smallMarkerIcon = createSmallMarkerIcon();
 
-            // Coordenadas de las dos academias en Reus
-            // Nota: Estas son coordenadas aproximadas, puedes ajustarlas si tienes las coordenadas exactas
+            // Coordenadas de las ubicaciones de academias en Reus
             LatLng rieraLocation = new LatLng(41.1525, 1.1103); // Riera de Miró 76
             LatLng ravalLocation = new LatLng(41.1505, 1.1050); // Raval de Jesús 42
+            LatLng avingudaLaSalleLocation = new LatLng(41.1547, 1.1073); // Avinguda de la Salle, 45
+            LatLng pgPrim6Location = new LatLng(41.1539, 1.1078); // Pg. de Prim, 6
+            LatLng pgPrim32Location = new LatLng(41.1541, 1.1085); // Passeig Prim, 32
 
             // Añade los marcadores con tu icono personalizado redimensionado
             mMap.addMarker(new MarkerOptions()
@@ -71,13 +73,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .snippet("Raval de Jesús 42-1º, 43201 Reus, (Tarragona)")
                     .icon(smallMarkerIcon));
 
-            // Crear límites que incluyan ambos marcadores
+            mMap.addMarker(new MarkerOptions()
+                    .position(avingudaLaSalleLocation)
+                    .title("LanguageClub Academia de Idiomas")
+                    .snippet("Avinguda de la Salle, 45, 43205 Reus, Tarragona")
+                    .icon(smallMarkerIcon));
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(pgPrim6Location)
+                    .title("Academia de Idiomas - Pg. de Prim")
+                    .snippet("Pg. de Prim, 6, 43202 Reus, Tarragona")
+                    .icon(smallMarkerIcon));
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(pgPrim32Location)
+                    .title("Academia de Idiomas - Passeig Prim")
+                    .snippet("Passeig Prim, 32 3º Reus - Telf: 977 311 954")
+                    .icon(smallMarkerIcon));
+
+            // Crear límites que incluyan todos los marcadores
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             builder.include(rieraLocation);
             builder.include(ravalLocation);
+            builder.include(avingudaLaSalleLocation);
+            builder.include(pgPrim6Location);
+            builder.include(pgPrim32Location);
             LatLngBounds bounds = builder.build();
 
-            // Mueve la cámara para incluir ambos marcadores con un padding
+            // Mueve la cámara para incluir todos los marcadores con un padding
             int padding = 100; // en píxeles
             mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
 
